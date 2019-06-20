@@ -4,7 +4,7 @@ import util
 
 # time, code, name, num, duration, average
 """
-Posição Chegada
+# Posição Chegada
 # Código Piloto
 # Nome Piloto
 #. Qtde Voltas Completadas
@@ -45,19 +45,25 @@ class InputManager:
 class RunnerStatus:
     driver = ()
     laps = []
-    race_time = timedelta(0)
+    race_time = timedelta()
     best_lap = (0, timedelta(1))
+    average_speed = 0
 
     def __init__(self, driver, laps):
         self.driver = driver
         self.laps = laps
+        avrg_aux = 0
 
         for lap in laps:
             time, num, duration, average = lap
             self.race_time += duration
 
+            # avrg_aux += util.to_microseconds(duration) * average / (3600 * (10 ** 6))
+
             if duration < self.best_lap[1]:
                 self.best_lap = (num, duration)
+
+        # self.average_speed = avrg_aux / util.to_microseconds(self.race_time)
 
     @property
     def code(self): return self.driver[0]
@@ -65,24 +71,10 @@ class RunnerStatus:
     @property
     def name(self): return self.driver[1]
 
-    def __str__(self):
-        # 0. code
-        # 1. name
-        # 2. num of laps
-        # 3. race time
-        # 4. position
-        # 5. (delay from the first)
-        # 6. best lap number
-        # 7. best lap duration
-        # 8. (best race lap)
-        return """{0}-{1} made {2} laps in {3}m, finishing in {4} {5}.
-        His best lap was the {6} ({7}m){8}\n"""
-
-
 # ------------------------------------------
 class Race:
     competitors = []
-    race_best_lap = ((), timedelta(1))
+    best_lap = ((), timedelta(1))
 
     def __init__(self, log):
         runners = []
@@ -90,27 +82,44 @@ class Race:
         for driver in log:
             runner = RunnerStatus(driver, log[driver])
 
-            if runner.best_lap[1] < self.race_best_lap[1]:
-                self.race_best_lap = (driver, runner.best_lap[1])
+            if runner.best_lap[1] < self.best_lap[1]:
+                self.best_lap = (driver, runner.best_lap[1])
 
             runners.append(runner)
 
         self.competitors = sorted(runners, key = lambda e: e.race_time)
 
     def __str__(self):
-        str = ''
+        str = '\n'
+
+        runner_str = '{0}-{1} made {2} laps in {3} [{9}km/h], finishing at {4}{5}. \t\t His best lap was the {6} ({7}){8}.\n'
+
         for i in range(len(self.competitors)):
             runner = self.competitors[i]
 
             delay = ''
             if i > 0:
-                delay = '(+{0})'.format(runner.race_time - self.competitors[0].race_time)
+                delay = ' (+{0})'.format(util.to_str(runner.race_time - self.competitors[0].race_time))
 
-            best = '.'
-            if runner.driver == self.race_best_lap[0]:
+            best = ''
+            if runner.driver == self.best_lap[0]:
                 best = ' that was the best lap of the race.'
 
-            str += runner.__str__().format(runner.code, runner.name, len(runner.laps), runner.race_time, i+1, delay, runner.best_lap[0], runner.best_lap[1], best)
+            str += runner_str.format(
+                runner.code,                                # 0. code
+                runner.name,                                # 1. name
+                len(runner.laps),                           # 2. num of laps
+                util.to_str(runner.race_time),              # 3. race time
+                util.to_ordinal(i+1),                       # 4. position
+                delay,                                      # 5. (delay from the first)
+                util.to_ordinal(runner.best_lap[0]),        # 6. best lap number
+                util.to_str(runner.best_lap[1]),            # 7. best lap duration
+                best,                                       # 8. (best race lap)
+                runner.average_speed                        # 9. average
+            )
+
+        with open('result', "w") as archive:
+            archive.write(str)
 
         return str
 

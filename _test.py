@@ -9,15 +9,14 @@ from main import *
 
 class UtilTest(unittest.TestCase):
     def test(self):
-        self.assertEqual(parse_duration("4:23.233"), timedelta(minutes=4, seconds=23, microseconds=233))
+        self.assertEqual(timedelta(minutes=4, seconds=23, microseconds=233), parse_duration("4:23.233"))
 
 # ------------------------------------------
 
 class AnyTest(unittest.TestCase):
     def test(self):
         self.assertEqual(44.275, float("44,275".replace(',', '.')))
-        a, b = (2, 3)
-        self.assertEqual(2, a)
+        self.assertEqual(1000001, to_microseconds(timedelta(seconds=1, microseconds=1)))
 
 # ------------------------------------------
 
