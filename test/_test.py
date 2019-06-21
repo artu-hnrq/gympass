@@ -1,6 +1,8 @@
 import unittest
 from datetime import timedelta
 import os
+import sys
+sys.path.append('/home/bridge/python/gympass')
 
 from util import *
 from main import *

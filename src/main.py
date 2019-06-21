@@ -15,6 +15,7 @@ import util
 # Descobrir quanto tempo cada piloto chegou após o vencedor
 
 # ------------------------------------------
+IO_PATH = 'io/'
 
 class InputManager:
     separator = re.compile('[ \–\t]+')
@@ -22,7 +23,7 @@ class InputManager:
     def load(self, archive_name):
         race_log = {}
 
-        with open(archive_name) as log:
+        with open(IO_PATH + archive_name) as log:
             for line in log:
                 line = self.separator.split(line)
 
@@ -125,7 +126,7 @@ class Race:
                 runner.average_speed                        # 9. average
             )
 
-        with open('result', "w") as archive:
+        with open(IO_PATH + 'result.txt', "w") as archive:
             archive.write(str)
 
         return str

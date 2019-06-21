@@ -13,11 +13,11 @@ def parse_duration(duration_str):
     return timedelta(**params)
 
 def to_str(duration):
-    m = int(duration.seconds / 60)
-    s = duration.seconds - (m * 60)
+    min = int(duration.seconds / 60)
+    s = duration.seconds - (min * 60)
     ms = int(duration.microseconds / (10 ** 3))
 
-    return '{0}m {1}s {2}ms'.format(m, s, ms)
+    return '{0}min {1}s {2}ms'.format(min, s, ms)
 
 def to_milliseconds(duration):
     return (duration.microseconds / (10 ** 3)) + (duration.seconds * (10 ** 3))
