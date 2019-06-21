@@ -2,7 +2,7 @@ from datetime import *
 import re
 
 def parse_duration(duration_str):
-    regex = re.compile(r'(?P<minutes>\d+?)\:(?P<seconds>\d+?)\.(?P<microseconds>\d+?)$')
+    regex = re.compile(r'(?P<minutes>\d+?)\:(?P<seconds>\d+?)\.(?P<milliseconds>\d+?)$')
     parts = regex.match(duration_str).groupdict().items()
     params = {
         unit:int(value)
@@ -15,12 +15,12 @@ def parse_duration(duration_str):
 def to_str(duration):
     m = int(duration.seconds / 60)
     s = duration.seconds - (m * 60)
-    ms = duration.microseconds
+    ms = int(duration.microseconds / (10 ** 3))
 
     return '{0}m {1}s {2}ms'.format(m, s, ms)
 
-def to_microseconds(duration):
-    return duration.microseconds + duration.seconds * (10 ** 6)
+def to_milliseconds(duration):
+    return (duration.microseconds / (10 ** 3)) + (duration.seconds * (10 ** 3))
 
 def to_ordinal(position):
     map = {

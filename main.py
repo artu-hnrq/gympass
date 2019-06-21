@@ -3,17 +3,16 @@ from datetime import timedelta
 import util
 
 # time, code, name, num, duration, average
-"""
+
 # Posição Chegada
 # Código Piloto
 # Nome Piloto
-#. Qtde Voltas Completadas
+# Qtde Voltas Completadas
 # Tempo Total de Prova
 # Descobrir a melhor volta de cada piloto
 # Descobrir a melhor volta da corrida
-Calcular a velocidade média de cada piloto durante toda corrida
-Descobrir quanto tempo cada piloto chegou após o vencedor
-"""
+# Calcular a velocidade média de cada piloto durante toda corrida
+# Descobrir quanto tempo cada piloto chegou após o vencedor
 
 # ------------------------------------------
 
@@ -27,12 +26,12 @@ class InputManager:
             for line in log:
                 line = self.separator.split(line)
 
-                driver = (line[1], line[2])
+                driver = (line[1], line[2])             # code, name
                 lap = (
-                    line[0],
-                    int(line[3]),
-                    util.parse_duration(line[4]),
-                    float(line[5].replace(',', '.'))
+                    line[0],                            # time
+                    int(line[3]),                       # num
+                    util.parse_duration(line[4]),       # duration
+                    float(line[5].replace(',', '.'))    # average
                 )
 
                 driver_log = race_log.get(driver, [])
@@ -52,18 +51,13 @@ class RunnerStatus:
     def __init__(self, driver, laps):
         self.driver = driver
         self.laps = laps
-        avrg_aux = 0
 
         for lap in laps:
             time, num, duration, average = lap
             self.race_time += duration
 
-            # avrg_aux += util.to_microseconds(duration) * average / (3600 * (10 ** 6))
-
             if duration < self.best_lap[1]:
                 self.best_lap = (num, duration)
-
-        # self.average_speed = avrg_aux / util.to_microseconds(self.race_time)
 
     @property
     def code(self): return self.driver[0]
@@ -71,10 +65,16 @@ class RunnerStatus:
     @property
     def name(self): return self.driver[1]
 
+    @property
+    def num_of_laps(self) : return len(self.laps)
+
 # ------------------------------------------
+HOUR_MICROSECOND_REASON = 60 * 60 * (10 ** 6)
+
 class Race:
     competitors = []
     best_lap = ((), timedelta(1))
+    lap_distance = 0
 
     def __init__(self, log):
         runners = []
@@ -88,6 +88,13 @@ class Race:
             runners.append(runner)
 
         self.competitors = sorted(runners, key = lambda e: e.race_time)
+
+        # race_average
+        lap_reference = self.competitors[0].laps[0]
+        self.lap_distance = util.to_milliseconds(lap_reference[2]) * (lap_reference[3] / HOUR_MICROSECOND_REASON)
+
+        for driver in self.competitors:
+            driver.average_speed = round((self.lap_distance * driver.num_of_laps / util.to_milliseconds(driver.race_time)) * HOUR_MICROSECOND_REASON, 2)
 
     def __str__(self):
         str = '\n'
@@ -103,7 +110,7 @@ class Race:
 
             best = ''
             if runner.driver == self.best_lap[0]:
-                best = ' that was the best lap of the race.'
+                best = ' that was the best lap of the race'
 
             str += runner_str.format(
                 runner.code,                                # 0. code
