@@ -1,18 +1,9 @@
 import re
 from datetime import timedelta
 import util
+from util import Duration
 
 # time, code, name, num, duration, average
-
-# Posição Chegada
-# Código Piloto
-# Nome Piloto
-# Qtde Voltas Completadas
-# Tempo Total de Prova
-# Descobrir a melhor volta de cada piloto
-# Descobrir a melhor volta da corrida
-# Calcular a velocidade média de cada piloto durante toda corrida
-# Descobrir quanto tempo cada piloto chegou após o vencedor
 
 # ------------------------------------------
 IO_PATH = 'io/'
@@ -29,9 +20,8 @@ class InputManager:
 
                 driver = (line[1], line[2])             # code, name
                 lap = (
-                    line[0],                            # time
                     int(line[3]),                       # num
-                    util.parse_duration(line[4]),       # duration
+                    Duration(line[4]),                  # duration
                     float(line[5].replace(',', '.'))    # average
                 )
 
@@ -45,7 +35,7 @@ class InputManager:
 class RunnerStatus:
     driver = ()
     laps = []
-    race_time = timedelta()
+    race_time = Duration()
     best_lap = (0, timedelta(1))
     average_speed = 0
 
@@ -54,27 +44,39 @@ class RunnerStatus:
         self.laps = laps
 
         for lap in laps:
-            time, num, duration, average = lap
+            num, duration, average = lap
             self.race_time += duration
 
             if duration < self.best_lap[1]:
                 self.best_lap = (num, duration)
 
-    @property
-    def code(self): return self.driver[0]
+        # race_average
+        num, duration, average = laps[0]
+        lap_distance = duration.to_total_milliseconds() * (average / HOUR_MICROSECOND_REASON)
+
+        self.average_speed = round((lap_distance * self.num_of_laps / self.race_time.to_total_milliseconds()) * HOUR_MICROSECOND_REASON, 2)
 
     @property
-    def name(self): return self.driver[1]
+    def code(self):                 return self.driver[0]
 
     @property
-    def num_of_laps(self) : return len(self.laps)
+    def name(self):                 return self.driver[1]
+
+    @property
+    def num_of_laps(self):          return len(self.laps)
+
+    @property
+    def best_lap_num(self):         return util.to_ordinal(self.best_lap[0])
+
+    @property
+    def best_lap_duration(self):    return self.best_lap[1]
 
 # ------------------------------------------
 HOUR_MICROSECOND_REASON = 60 * 60 * (10 ** 6)
 
 class Race:
     competitors = []
-    best_lap = ((), timedelta(1))
+    best_lap = timedelta(1)
     lap_distance = 0
 
     def __init__(self, log):
@@ -83,53 +85,48 @@ class Race:
         for driver in log:
             runner = RunnerStatus(driver, log[driver])
 
-            if runner.best_lap[1] < self.best_lap[1]:
-                self.best_lap = (driver, runner.best_lap[1])
+            if runner.best_lap_duration < self.best_lap:
+                self.best_lap = runner.best_lap_duration
 
             runners.append(runner)
 
-        self.competitors = sorted(runners, key = lambda e: e.race_time)
-
-        # race_average
-        lap_reference = self.competitors[0].laps[0]
-        self.lap_distance = util.to_milliseconds(lap_reference[2]) * (lap_reference[3] / HOUR_MICROSECOND_REASON)
-
-        for driver in self.competitors:
-            driver.average_speed = round((self.lap_distance * driver.num_of_laps / util.to_milliseconds(driver.race_time)) * HOUR_MICROSECOND_REASON, 2)
+        self.competitors = sorted(runners, key = lambda r: r.race_time)
 
     def __str__(self):
         str = '\n'
 
-        runner_str = '{0}-{1} made {2} laps in {3} [{9}km/h], finishing at {4}{5}. \t\t His best lap was the {6} ({7}){8}.\n'
+        runner_str = (
+            '{code}-{name} made {num_of_laps} laps in {race_time} [{average_speed}km/h], '
+            'finishing at {position}{delay}.'
+            '\t His best lap was the {best_lap_num} ({best_lap_duration}){best_race_lap}.\n'
+        )
 
         for i in range(len(self.competitors)):
             runner = self.competitors[i]
 
-            delay = ''
-            if i > 0:
-                delay = ' (+{0})'.format(util.to_str(runner.race_time - self.competitors[0].race_time))
+            answer = {
+                'code':                 runner.code,
+                'name':                 runner.name,
+                'num_of_laps':          runner.num_of_laps,
+                'race_time':            runner.race_time,
+                'position':             util.to_ordinal(i+1),
+                'delay':                f' (+{runner.race_time - self.winner.race_time})' if i>0 else '',
+                'average_speed':        runner.average_speed,
+                'best_lap_num':         runner.best_lap_num,
+                'best_lap_duration':    runner.best_lap_duration,
+                'best_race_lap':        ' that was the best lap of the race'
+                                        if runner.best_lap_duration == self.best_lap else ''
+            }
 
-            best = ''
-            if runner.driver == self.best_lap[0]:
-                best = ' that was the best lap of the race'
-
-            str += runner_str.format(
-                runner.code,                                # 0. code
-                runner.name,                                # 1. name
-                len(runner.laps),                           # 2. num of laps
-                util.to_str(runner.race_time),              # 3. race time
-                util.to_ordinal(i+1),                       # 4. position
-                delay,                                      # 5. (delay from the first)
-                util.to_ordinal(runner.best_lap[0]),        # 6. best lap number
-                util.to_str(runner.best_lap[1]),            # 7. best lap duration
-                best,                                       # 8. (best race lap)
-                runner.average_speed                        # 9. average
-            )
+            str += runner_str.format(**answer)
 
         with open(IO_PATH + 'result.txt', "w") as archive:
             archive.write(str)
 
         return str
+
+    @property
+    def winner(self): return self.competitors[0]
 
 # ------------------------------------------
 

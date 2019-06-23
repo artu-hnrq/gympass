@@ -2,7 +2,7 @@ import unittest
 from datetime import timedelta
 import os
 import sys
-sys.path.append('/home/bridge/python/gympass')
+sys.path.append('/home/bridge/python/gympass/src')
 
 from util import *
 from main import *
@@ -11,7 +11,9 @@ from main import *
 
 class UtilTest(unittest.TestCase):
     def test(self):
-        self.assertEqual(timedelta(minutes=4, seconds=23, milliseconds=233), parse_duration("4:23.233"))
+        t = timedelta(minutes=4, seconds=23, milliseconds=233)
+        print(t)
+        self.assertEqual(t, parse_duration("4:23.233"))
 
 # ------------------------------------------
 
@@ -28,7 +30,7 @@ class InputManagerTest(unittest.TestCase):
 
     def test(self):
         archive_name = self.archive_name
-        with open(archive_name, "w") as archive:
+        with open(IO_PATH + archive_name, "w") as archive:
             archive.write(self.content)
 
         im = InputManager()
@@ -36,8 +38,8 @@ class InputManagerTest(unittest.TestCase):
 
         self.assertEqual(1, len(input))
 
-        if os.path.exists(archive_name):
-            os.remove(archive_name)
+        if os.path.exists(IO_PATH + archive_name):
+            os.remove(IO_PATH + archive_name)
 
 # ------------------------------------------
 
