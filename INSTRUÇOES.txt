@@ -1,0 +1,9 @@
+This program was developed in Python 3.7 by Arthur Henrique as answer to the Gympass challenge.
+
+To execute the program run the 'src/main.py' archive.
+
+The algorithm will look for 'io/race.log' archive,
+loading it's content as described in challenge's statement.
+
+After this, the Race and RunnerStatus classes are responsible to calculate all requirements from the inputed information.
+The description of the race result will be printed, as well as registered in 'io/result.txt' archive

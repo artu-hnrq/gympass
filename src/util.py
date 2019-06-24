@@ -1,5 +1,11 @@
-from datetime import *
+from datetime import timedelta
 import re
+
+MINUTES_PER_HOUR =              60
+SECONDS_PER_MINUTE =            60
+MILLISECONDS_PER_SECOND =       1000
+MICROSECONDS_PER_MILLISECOND =  1000
+MILLISECONDS_PER_HOUR =         MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR
 
 class Duration(timedelta):
     def __new__(cls, args = '0'):
@@ -22,22 +28,25 @@ class Duration(timedelta):
             return super(Duration, cls).__new__(cls, **args)
 
         elif isinstance(args, timedelta):
-            return Duration(f'0:{args.seconds}.{int(args.microseconds / 1000)}')
+            seconds = args.seconds
+            milliseconds = int(args.microseconds / MICROSECONDS_PER_MILLISECOND)
+
+            return Duration(f'0:{seconds}.{milliseconds}')
 
         else:
             raise ValueError(type(args))
 
     @property
-    def min(self): return int(self.seconds / 60)
+    def minutes(self):          return int(super().seconds / SECONDS_PER_MINUTE)
 
     @property
-    def s(self): return self.seconds - (self.min * 60)
+    def seconds(self):          return super().seconds % SECONDS_PER_MINUTE
 
     @property
-    def ms(self): return int(self.microseconds / (10 ** 3))
+    def milliseconds(self):     return int(self.microseconds / MICROSECONDS_PER_MILLISECOND)
 
-    def to_total_milliseconds(self):
-        return self.seconds * 1000 + self.ms
+    def to_milliseconds(self):
+        return MILLISECONDS_PER_SECOND * self.seconds + self.milliseconds
 
     def __add__(self, other):
         return Duration(super().__add__(other))
@@ -46,7 +55,8 @@ class Duration(timedelta):
         return Duration(super().__sub__(other))
 
     def __str__(self):
-        return f'{self.min}min {self.s}s {self.ms}ms'
+        return f'{self.minutes}min {self.seconds}s {self.milliseconds}ms'
+
 
 def to_ordinal(position):
     map = {
