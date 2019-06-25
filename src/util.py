@@ -37,22 +37,22 @@ class Duration(timedelta):
             raise ValueError(type(args))
 
     @property
-    def minutes(self):          return int(super().seconds / SECONDS_PER_MINUTE)
+    def minutes(self):          return int(super(Duration, self).seconds / SECONDS_PER_MINUTE)
 
     @property
-    def seconds(self):          return super().seconds % SECONDS_PER_MINUTE
+    def seconds(self):          return super(Duration, self).seconds % SECONDS_PER_MINUTE
 
     @property
     def milliseconds(self):     return int(self.microseconds / MICROSECONDS_PER_MILLISECOND)
 
     def to_milliseconds(self):
-        return MILLISECONDS_PER_SECOND * self.seconds + self.milliseconds
+        return MILLISECONDS_PER_SECOND * super().seconds + self.milliseconds
 
     def __add__(self, other):
-        return Duration(super().__add__(other))
+        return Duration(super(Duration, self).__add__(other))
 
     def __sub__(self, other):
-        return Duration(super().__sub__(other))
+        return Duration(super(Duration, self).__sub__(other))
 
     def __str__(self):
         return f'{self.minutes}min {self.seconds}s {self.milliseconds}ms'

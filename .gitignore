@@ -1,4 +1,4 @@
 io/result.txt
 
 src/__pycache__/
-test/other.py
+*.pyc
