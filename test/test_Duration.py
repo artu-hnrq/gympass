@@ -2,8 +2,8 @@
 import os
 from datetime import timedelta
 
-from src.util import *
 from .my_testcase import *
+from src.time import *
 
 # ------------------------------------------
 class DurationTestCase(MyTestCase):
@@ -13,7 +13,7 @@ class DurationTestCase(MyTestCase):
             timedelta(minutes=10),                                      # Equivalent timedelta object
             '10:00.000',                                                # Equivalent Diration input string
             '10min 0s 0ms',                                             # Equivalent Duration output string
-            10 * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND           # total of milliseconds
+            10 * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND           # Total of milliseconds
         ),
         (
             timedelta(minutes=9, seconds=8),
@@ -78,7 +78,7 @@ class DurationTestCase(MyTestCase):
         t = timedelta(days=2)
         self.assertNotEqual(t, Duration(t))
 
-    # Verify the the Duration string output
+    # Verify the Duration string output
     def test_str(self):
         for each in self.map:
             self.assertEqual(each[2], Duration(each[0]).__str__())

@@ -7,7 +7,7 @@ from src.in_out import *
 # ------------------------------------------
 class IoManagerTestCase(MyTestCase):
 
-    # Creates an archive in the folder io before run the test and delete it at the end
+    # General method that creates an archive in the folder io before run the test and delete it at the end
     def withInputFile(self, archive_name, content, test):
         with open(IO_PATH + archive_name, "w") as archive:
             archive.write(content)
@@ -19,11 +19,11 @@ class IoManagerTestCase(MyTestCase):
 
     # Try to load an inexistent archive
     def test_FileNotFound(self):
-        def _1():
+        def _expectError():
             io = IoManager()
             input = io.load('archive_name')
 
-        self.expectError(FileNotFoundError, _1)
+        self.expectError(FileNotFoundError, _expectError)
 
     # Try to load an archive with unreadable information
     def test_UnknowedFormat(self):
@@ -53,17 +53,17 @@ class IoManagerTestCase(MyTestCase):
             "20:01.002   001 – ARTHUR   2   1:02.003    4,05\n"
         )
 
-        def do():
+        def _withImputFile():
             im = IoManager()
             input = im.load(archive_name)
 
-            self.assertEqual(3, len(input))                     # Check for 3 drivers
+            self.assertEqual(3, len(input))     # Check for 3 drivers
 
             for driver in [('100', 'ARTU'), ('001', 'ARTHUR'), ('010', 'HENRIQUE')]:
-                if driver not in input:
+                if driver not in input:         # Check for the mentioned drivers
                     self.fail(f'Driver {driver} identification fail')
                 else:
                     laps = input[driver]
-                    self.assertEqual(len(laps), laps[-1][0])        # Check the number of laps for each driver
+                    self.assertEqual(len(laps), laps[-1][0])    # Check the number of laps for each driver
 
-        self.withInputFile(archive_name, content, do)
+        self.withInputFile(archive_name, content, _withImputFile)

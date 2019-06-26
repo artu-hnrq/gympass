@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
-import sys
-from .util import *
+from .time import *
 
 # ------------------------------------------
 IO_PATH = 'io/'
@@ -27,8 +26,10 @@ class IoManager:
                     driver_log = race_log.get(driver, [])
                     driver_log.append(lap)
                     race_log.setdefault(driver, driver_log)
+
         except FileNotFoundError:
-            raise FileNotFoundError(f"To run this program place the input content in '{IO_PATH + archive_name}'")
+            raise FileNotFoundError(f"Certify that '{IO_PATH + archive_name}' is the correct archive's path and name")
+
         except (AttributeError, ValueError):
             raise ValueError("Certify that the input contet is in the format: '{time} {code} – {name} {lap_num} {lap_duration} {average_speed}'")
 
