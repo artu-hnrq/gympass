@@ -45,7 +45,6 @@ class RunnerStatus:
 class Race:
     competitors = []
     best_lap = timedelta(1)
-    lap_distance = 0
 
     def __init__(self, log):
         runners = []
@@ -58,7 +57,13 @@ class Race:
 
             runners.append(runner)
 
-        self.competitors = sorted(runners, key = lambda r: r.race_time)
+        # Ordenating runners by position
+        def ordenate(runner):
+            # increase the return from their that didn't finish the race
+            return runner.race_time + timedelta(hours = 4 - runner.num_of_laps)
+
+        self.competitors = sorted(runners, key = ordenate)
+
 
     def __str__(self):
         str = '\n'

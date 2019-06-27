@@ -25,7 +25,7 @@ A correction suggestion was opened through [this pull request](https://github.co
 
 ### Tests
 
-To execute the unit tests of this project run the following command from the root folder:
+To execute project's unit tests run the following command from the root folder:
 ```
-$ python3.7 -Bm unittest discover
+$ python3.7 -Bm unittest test
 ```

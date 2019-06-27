@@ -1,12 +1,40 @@
 # -*- coding: utf-8 -*-
 import os
+from unittest import TestCase
 from datetime import timedelta
 
-from .my_testcase import *
+from .util import *
 from src.time import *
 
 # ------------------------------------------
-class DurationTestCase(MyTestCase):
+class DurationTestCase(TestCase):
+
+    # Try to create a Duration instance with some non-supported types
+    @expectError(ValueError)
+    def test_UnknowedType_1(self):
+        Duration(1)
+
+    @expectError(ValueError)
+    def test_UnknowedType_2(self):
+        Duration(['0:00.001'])
+
+    @expectError(ValueError)
+    def test_UnknowedType_3(self):
+        Duration(True)
+
+    # Try to create a Duration instance with some non-supported arguments
+    @expectError(AttributeError)
+    def test_WrongArgument_1(self):
+        Duration("error")
+
+    @expectError(TypeError)
+    def test_WrongArgument_1(self):
+        Duration({'minutes': 3, 'unknowedUnit': 3})
+
+    @expectError(TypeError)
+    def test_WrongArgument_1(self):
+        Duration({'hours': [True]})
+
     map = [
         (timedelta(), '0:00.000', '0min 0s 0ms', 0),
         (
@@ -34,37 +62,7 @@ class DurationTestCase(MyTestCase):
             (1 * SECONDS_PER_MINUTE + 2) * MILLISECONDS_PER_SECOND + 3
         )
     ]
-
-    # Try to create a Duration instance with some not-supported types
-    def test_UnknowedType(self):
-        def _1():
-            Duration(1)
-
-        def _2():
-            Duration(['0:00.001'])
-
-        def _3():
-            Duration(True)
-
-        self.expectError(ValueError, _1)
-        self.expectError(ValueError, _2)
-        self.expectError(ValueError, _3)
-
-    # Try to create a Duration instance with some not-supported arguments
-    def test_WrongArgument(self):
-        def _1():
-            Duration("error")
-
-        def _2():
-            Duration({'minutes': 3, 'unknowedUnit': 3})
-
-        def _3():
-            Duration({'hours': [True]})
-
-        self.expectError(AttributeError, _1)
-        self.expectError(TypeError, _2)
-        self.expectError(TypeError, _3)
-
+    
     # Verify the equivalence between an timedelta object and the Duration created by a string
     def test_Parse(self):
         for each in self.map:

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
+from unittest import TestCase
+from .util import *
 
-from .my_testcase import *
-from src.in_out import *
+from src.io_manager import *
 
 # ------------------------------------------
-class IoManagerTestCase(MyTestCase):
+class IoManagerTestCase(TestCase):
 
     # General method that creates an archive in the folder io before run the test and delete it at the end
     def withInputFile(self, archive_name, content, test):
@@ -18,14 +19,13 @@ class IoManagerTestCase(MyTestCase):
             os.remove(IO_PATH + archive_name)
 
     # Try to load an inexistent archive
+    @expectError(FileNotFoundError)
     def test_FileNotFound(self):
-        def _expectError():
-            io = IoManager()
-            input = io.load('archive_name')
-
-        self.expectError(FileNotFoundError, _expectError)
+        io = IoManager()
+        input = io.load('archive_name')
 
     # Try to load an archive with unreadable information
+    @expectError(ValueError)
     def test_UnknowedFormat(self):
         archive_name = 'Input.test'
         content = (
@@ -34,11 +34,8 @@ class IoManagerTestCase(MyTestCase):
         )
 
         def _withImputFile():
-            def _expectError():
-                io = IoManager()
-                input = io.load('archive_name')
-
-            self.expectError(FileNotFoundError, _expectError)
+            io = IoManager()
+            input = io.load(archive_name)
 
         self.withInputFile(archive_name, content, _withImputFile)
 
