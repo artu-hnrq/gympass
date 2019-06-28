@@ -1,26 +1,58 @@
 from unittest import TestCase
 
-from src.race import *
+from .util import *
+from .data_fabric import *
+from src.runner_status import *
 
 # ------------------------------------------
 class RunnerStatusTestCase(TestCase):
+    driver = None
+    laps = None
+
+    lap_distance = 10
+
+    def setUp(self):
+        self.driver = createDriver()
+        self.laps = createLaps(self.lap_distance)
+
+    # Try to create a RunnerStatus instance with some non-supported argument types
+    @expectError(TypeError)
+    def test_UnsupportedArgument_1(self):
+        RunnerStatus(1,2)
+
+    @expectError(TypeError)
+    def test_UnsupportedArgument_2(self):
+        RunnerStatus({}, [23.1, (True, 'a')])
+
+    # Verify all class atributes construction results
     def test(self):
-        runner = RunnerStatus(('0', 'Artú'), [
-            (1, Duration('1'), 100.0),
-            (2, Duration('4:00.005'), 25.0),
-            (3, Duration('2:05'), 50.0)
-        ])
+        runner = RunnerStatus(self.driver, self.laps)
+
+        num_of_laps = len(self.laps)
+
+        best_lap = [
+            (num, lap_duration)
+            for (num, lap_duration, average_speed)
+            in self.laps
+            if lap_duration == min([lap[1] for lap in self.laps])
+        ][0]
+
+        race_time = Duration()
+        for lap in self.laps:
+            race_time += lap[1]
+
+        average_speed = round(self.lap_distance * num_of_laps / race_time.to_milliseconds() * MILLISECONDS_PER_HOUR, 2)
 
         assertEquals = [
-            ('0', runner.code),
-            ('Artú', runner.name),
+            (self.driver[0], runner.code),
+            (self.driver[1], runner.name),
 
-            (3, runner.num_of_laps),
-            ('first', runner.best_lap_num),
-            (Duration('1'), runner.best_lap_duration),
+            (num_of_laps, runner.num_of_laps),
+            (best_lap[0], runner.best_lap_num),
+            (best_lap[1], runner.best_lap_duration),
 
-            (Duration('7:05.005'), runner.race_time),
-            (42.35, runner.average_speed)
+            (race_time, runner.race_time),
+            (average_speed, runner.average_speed)
         ]
 
         for equivalence in assertEquals:

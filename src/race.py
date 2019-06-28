@@ -1,45 +1,5 @@
 from . import util
-from .time import *
-
-# ------------------------------------------
-class RunnerStatus:
-    driver = ()
-    laps = []
-    race_time = Duration()
-    best_lap = (0, timedelta(1))
-    average_speed = 0
-
-    def __init__(self, driver, laps):
-        self.driver = driver
-        self.laps = laps
-
-        for lap in laps:
-            num, duration, average = lap
-            self.race_time += duration
-
-            if duration < self.best_lap[1]:
-                self.best_lap = (num, duration)
-
-        # race_average
-        num, duration, average = laps[0]
-        lap_distance = duration.to_milliseconds() * (average / MILLISECONDS_PER_HOUR)
-
-        self.average_speed = round((lap_distance * self.num_of_laps / self.race_time.to_milliseconds()) * MILLISECONDS_PER_HOUR, 2)
-
-    @property
-    def code(self):                 return self.driver[0]
-
-    @property
-    def name(self):                 return self.driver[1]
-
-    @property
-    def num_of_laps(self):          return len(self.laps)
-
-    @property
-    def best_lap_num(self):         return util.to_ordinal(self.best_lap[0])
-
-    @property
-    def best_lap_duration(self):    return self.best_lap[1]
+from .runner_status import *
 
 # ------------------------------------------
 class Race:
@@ -85,7 +45,7 @@ class Race:
                 'position':             util.to_ordinal(i+1),
                 'delay':                f' (+{runner.race_time - self.winner.race_time})' if i>0 else '',
                 'average_speed':        runner.average_speed,
-                'best_lap_num':         runner.best_lap_num,
+                'best_lap_num':         util.to_ordinal(runner.best_lap_num),
                 'best_lap_duration':    runner.best_lap_duration,
                 'best_race_lap':        ' that was the best lap of the race'
                                         if runner.best_lap_duration == self.best_lap else ''

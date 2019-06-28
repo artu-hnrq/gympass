@@ -1,5 +1,5 @@
 def to_ordinal(position):
-    map = {
+    equivalence = {
         1: 'first',
         2: 'second',
         3: 'third',
@@ -10,4 +10,4 @@ def to_ordinal(position):
         8: 'eighth',
         9: 'nineth'
     }
-    return map[position]
+    return equivalence[position]

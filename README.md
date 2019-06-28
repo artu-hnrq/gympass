@@ -11,9 +11,9 @@ To execute it run the 'src/main.py' archive, from the root folder, like this:
 $ python3.7 -Bm src.main
 ```
 
-The algorithm will look for the 'io/race.log' archive,
+The algorithm will look for the _'io/race.log'_ archive,
 loading it's content as described in challenge's statement.
-After this, it will calculate all required items and the description of the race result will be printed, as well as registered in 'io/result.txt' archive.
+After this, it will calculate all required items and the description of the race result will be printed, as well as registered in _'io/result.txt'_ archive.
 
 ### Presumption
 

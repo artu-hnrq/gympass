@@ -5,18 +5,29 @@ from .util import *
 
 from src.io_manager import *
 
+# Define a decorator that creates an archive in the folder io
+# and load it's content before run the test, deleting it at the end
+def withInputFile(content):
+    archive_name = 'Input.test'
+
+    def decorator(test):
+        def do(self):
+            with open(IO_PATH + archive_name, "w") as archive:
+                archive.write(content)
+
+            io = IoManager()
+            input = io.load(archive_name)
+
+            test(self, input)
+
+            if os.path.exists(IO_PATH + archive_name):
+                os.remove(IO_PATH + archive_name)
+
+        return do
+    return decorator
+
 # ------------------------------------------
 class IoManagerTestCase(TestCase):
-
-    # General method that creates an archive in the folder io before run the test and delete it at the end
-    def withInputFile(self, archive_name, content, test):
-        with open(IO_PATH + archive_name, "w") as archive:
-            archive.write(content)
-
-        test()
-
-        if os.path.exists(IO_PATH + archive_name):
-            os.remove(IO_PATH + archive_name)
 
     # Try to load an inexistent archive
     @expectError(FileNotFoundError)
@@ -25,42 +36,32 @@ class IoManagerTestCase(TestCase):
         input = io.load('archive_name')
 
     # Try to load an archive with unreadable information
-    @expectError(ValueError)
-    def test_UnknowedFormat(self):
-        archive_name = 'Input.test'
-        content = (
-            "20:01.002   000 – ARTU   1   S:02.003    4,05\n"
-            "  000 – ARTU    8   1   1:02.003    4,05\n"
-        )
+    @expectError(ValueError, lambda: os.remove(IO_PATH + 'Input.test'))
+    @withInputFile((
+        "20:01.002   000 – ARTU   1   S:02.003    4,05\n"
+        "  000 – ARTU    8   1   1:02.003    4,05\n"
+    ))
+    def test_UnknowedFormat(self, input):
+        pass
 
-        def _withImputFile():
-            io = IoManager()
-            input = io.load(archive_name)
+    # Verify the structure built from a valid input
+    @withInputFile((
+        "20:01.002   100 – ARTU   1   1:02.003    4,05\n"
+        "20:01.002   100 – ARTU  2   1:02.003    4,05\n"
+        "20:01.002   001 – ARTHUR   1   1:02.003    4,05\n"
+        "20:01.002   010 – HENRIQUE   1   1:02.003    4,05\n"
+        "20:01.002   001 – ARTHUR   2   1:02.003    4,05\n"
+    ))
+    def test_StructureLoaded(self, input):
+        self.assertEqual(3, len(input))     # Check for 3 drivers
 
-        self.withInputFile(archive_name, content, _withImputFile)
+        for driver in [('100', 'ARTU'), ('001', 'ARTHUR'), ('010', 'HENRIQUE')]:
+            self.assertTrue(driver in input)         # Check for the mentioned drivers
 
-    # Verufy the structure built from a valid input
-    def test_StructureLoaded(self):
-        archive_name = 'Input.test'
-        content = (
-            "20:01.002   100 – ARTU   1   1:02.003    4,05\n"
-            "20:01.002   100 – ARTU  2   1:02.003    4,05\n"
-            "20:01.002   001 – ARTHUR   1   1:02.003    4,05\n"
-            "20:01.002   010 – HENRIQUE   1   1:02.003    4,05\n"
-            "20:01.002   001 – ARTHUR   2   1:02.003    4,05\n"
-        )
+            laps = input[driver]
+            self.assertEqual(len(laps), laps[-1][0])    # Check the number of laps for each driver
 
-        def _withImputFile():
-            im = IoManager()
-            input = im.load(archive_name)
-
-            self.assertEqual(3, len(input))     # Check for 3 drivers
-
-            for driver in [('100', 'ARTU'), ('001', 'ARTHUR'), ('010', 'HENRIQUE')]:
-                if driver not in input:         # Check for the mentioned drivers
-                    self.fail(f'Driver {driver} identification fail')
-                else:
-                    laps = input[driver]
-                    self.assertEqual(len(laps), laps[-1][0])    # Check the number of laps for each driver
-
-        self.withInputFile(archive_name, content, _withImputFile)
+            for lap in laps:
+                self.assertTrue(isinstance(lap[0], int))
+                self.assertTrue(isinstance(lap[1], Duration))
+                self.assertTrue(isinstance(lap[2], float))

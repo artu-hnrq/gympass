@@ -28,14 +28,14 @@ class DurationTestCase(TestCase):
         Duration("error")
 
     @expectError(TypeError)
-    def test_WrongArgument_1(self):
+    def test_WrongArgument_2(self):
         Duration({'minutes': 3, 'unknowedUnit': 3})
 
     @expectError(TypeError)
-    def test_WrongArgument_1(self):
+    def test_WrongArgument_3(self):
         Duration({'hours': [True]})
 
-    map = [
+    equivalence = [
         (timedelta(), '0:00.000', '0min 0s 0ms', 0),
         (
             timedelta(minutes=10),                                      # Equivalent timedelta object
@@ -62,14 +62,14 @@ class DurationTestCase(TestCase):
             (1 * SECONDS_PER_MINUTE + 2) * MILLISECONDS_PER_SECOND + 3
         )
     ]
-    
+
     # Verify the equivalence between an timedelta object and the Duration created by a string
     def test_Parse(self):
-        for each in self.map:
+        for each in self.equivalence:
             self.assertEqual(each[0], Duration(each[1]))
 
     # Verify the equivalence between an timedelta object and the Duration created by it
-    def test_create(self):
+    def test_Create(self):
         t = timedelta(hours=1)
         self.assertEqual(t, Duration(t))
 
@@ -78,10 +78,10 @@ class DurationTestCase(TestCase):
 
     # Verify the Duration string output
     def test_str(self):
-        for each in self.map:
+        for each in self.equivalence:
             self.assertEqual(each[2], Duration(each[0]).__str__())
 
     # Verify the result of to_milliseconds method
     def test_to_millisecond(self):
-        for each in self.map:
+        for each in self.equivalence:
             self.assertEqual(each[3], Duration(each[1]).to_milliseconds())

@@ -15,17 +15,17 @@ class RaceTestCase(TestCase):
         for i in range(random.randint(3, 5)):
             self.race_log[createDriver()] = createLaps(self.lap_distance)
 
-    # Try to create a Race instance with some non-supported types
+    # Try to create a Race instance with some non-supported argument types
     @expectError(TypeError)
-    def test_UnknowedType_1(self):
+    def test_UnsupportedArgument_1(self):
         Race(1)
 
     @expectError(TypeError)
-    def test_UnknowedType_2(self):
+    def test_UnsupportedArgument_2(self):
         Race((True))
 
     @expectError(TypeError)
-    def test_UnknowedType_3(self):
+    def test_UnsupportedArgument_3(self):
         Race([4.5])
 
     # Try to get the winner from a Race without competitors
@@ -59,7 +59,7 @@ class RaceTestCase(TestCase):
             self.assertEqual(positions[i], race.competitors[i].driver)
         self.assertEqual(positions[0], race.winner.driver)
 
-    # Verify correct calculation of the race's best lap
+    # Verify correct calculation of race's best lap
     def test_best_lap(self):
         race = Race(self.race_log)
 

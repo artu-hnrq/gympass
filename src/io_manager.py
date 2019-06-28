@@ -28,7 +28,7 @@ class IoManager:
                     race_log.setdefault(driver, driver_log)
 
         except FileNotFoundError:
-            raise FileNotFoundError(f"Certify that '{IO_PATH + archive_name}' is the correct archive's path and name")
+            raise FileNotFoundError(f"Certify that '{IO_PATH + archive_name}' is the correct input archive's path and name")
 
         except (AttributeError, ValueError):
             raise ValueError("Certify that the input contet is in the format: '{time} {code} – {name} {lap_num} {lap_duration} {average_speed}'")
